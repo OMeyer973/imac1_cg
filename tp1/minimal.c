@@ -8,7 +8,18 @@ bastienlaby.fr/imac/
 #include <stdlib.h>
 #include <stdio.h>
 
-void resizeWindow();
+
+typedef struct point {
+    float x, y; //position
+    unsigned char r,g,b; //couleur
+    struct point* next; //point suivant à dessiner
+} Point, *PointList;
+
+typedef struct primitive {
+    GLenum primitiveType;
+    PointList points;
+    struct primitive* next;
+} Primitive, *PrimitiveList;
 
 
 /* Dimensions de la fenêtre */
@@ -22,6 +33,151 @@ static const unsigned int BIT_PER_PIXEL = 32;
 static const Uint32 FRAMERATE_MILLISECONDS = 1000 / 60;
 
 
+
+void resizeWindow(); /*redimensionnement de la fenetre*/
+void drawPalette();/*dessine la palette à l'écran*/
+Point* allocPoint(float x, float y, unsigned char r, unsigned char g, unsigned char b); /*Initialise et retourne un point avec sa mémoire alouée*/
+void addPointToList(Point* point, PointList* list); /*ajoute un point à une liste chainée de points*/
+void drawPointList(PointList list); /*dessine tous les points d'une liste chaînée de points*/
+void deletePoints (PointList* list); /*libère les ressources utilisées par une liste de points*/
+Primitive* allocPrimitive (GLenum primitiveType); /*initialise et retourne une primitive avec sa mémoire allouée (mais pas celle de ses points)*/
+void addPrimitive(Primitive* primitive, PrimitiveList* list); /*Ajoute une primitive à une liste de primitives*/
+void drawPrimitives (PrimitiveList list); /*dessine la liste de primitives donée*/
+
+void resizeWindow() {  /*redimensionnement de la fenetre*/
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-1.,-1.,-1.,1.);
+    SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
+}
+
+void drawPalette() {/*dessine la palette à l'écran*/
+    glBegin(GL_QUADS);
+        glColor3ub(23, 18, 25);
+        glVertex2f(-1 + 2. * 0, -(-1 + 2. * 0));
+        glVertex2f(-1 + 2. * 0, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 1/5, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 1/5, -(-1 + 2. * 0));
+        
+        glColor3ub(34, 85, 96);
+        glVertex2f(-1 + 2. * 1/5, -(-1 + 2. * 0));
+        glVertex2f(-1 + 2. * 1/5, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 2/5, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 2/5, -(-1 + 2. * 0));
+                        
+        glColor3ub(237,240,96);
+        glVertex2f(-1 + 2. * 2/5, -(-1 + 2. * 0));
+        glVertex2f(-1 + 2. * 2/5, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 3/5, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 3/5, -(-1 + 2. * 0));
+        
+        glColor3ub(240,128,60);
+        glVertex2f(-1 + 2. * 3/5, -(-1 + 2. * 0));
+        glVertex2f(-1 + 2. * 3/5, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 4/5, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 4/5, -(-1 + 2. * 0));
+        
+        glColor3ub(49,13,32);
+        glVertex2f(-1 + 2. * 4/5, -(-1 + 2. * 0));
+        glVertex2f(-1 + 2. * 4/5, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 1, -(-1 + 2. * 1));
+        glVertex2f(-1 + 2. * 1, -(-1 + 2. * 0));
+    glEnd();
+}
+
+
+Point* allocPoint(float x, float y, unsigned char r, unsigned char g, unsigned char b) { /*Initialise et retourne un point avec sa mémoire alouée*/
+    Point* tmp;
+    tmp = malloc(sizeof(Point));
+    if (tmp != NULL) {
+        tmp->x = x;
+        tmp->y = y;
+        tmp->r = r;
+        tmp->g = g;
+        tmp->b = b;
+        tmp->next = NULL;
+        return tmp;
+    }
+    return 0;
+}
+
+void addPointToList(Point* point, PointList* list) { /*ajoute un point à une liste chainée de points*/
+    point->next = *list;
+    *list = point;
+}
+
+void drawPointList(PointList list) { /*dessine tous les points d'une liste chaînée de points*/
+    glBegin(GL_POINTS);
+    while (list != NULL) {
+        glColor3ub(list->r, list->g, list->b);
+        glVertex2f(-1 + 2. * list->x / WINDOW_WIDTH, -(-1 + 2. * list->y / WINDOW_HEIGHT));
+        list = list->next;
+    }
+    glEnd();
+}
+
+void deletePoints (PointList* list) { /*libère les ressources utilisées par une liste de points*/
+    PointList next;
+    while (*list != NULL) {
+        next = (*list)->next;
+        free(*list);
+        *list = next;
+    }
+}
+
+
+Primitive* allocPrimitive (GLenum primitiveType) { /*initialise et retourne une primitive avec sa mémoire allouée (mais pas celle de ses points)*/
+    Primitive* tmp;
+    tmp = malloc(sizeof(Primitive));
+    if (tmp != NULL) {
+        tmp->primitiveType = primitiveType;
+        tmp->next = NULL;
+        tmp->points = NULL;
+        return tmp;
+    }
+    return 0;
+}
+
+void addPrimitive(Primitive* primitive, PrimitiveList* list) { /*Ajoute une primitive à une liste de primitives*/
+    primitive->next = *list;
+    *list = primitive;
+}
+
+void drawPrimitives (PrimitiveList list) { /*dessine la liste de primitives donée*/
+    /*todo : finir la fonction*/
+    
+    while (list != NULL) {
+        PointList points;
+        points = list->points;
+        
+        /*printf("%d\n",list->primitiveType);*/
+        glColor3ub(list->points->r, list->points->g, list->points->b);
+        glBegin(list->primitiveType);
+        while (points != NULL) {
+            glVertex2f(-1 + 2. * points->x / WINDOW_WIDTH, -(-1 + 2. * points->y / WINDOW_HEIGHT));
+            points = points->next;
+        }
+        glEnd();
+        list = list->next;
+    }
+}
+
+void deletePrimitive (Primitive* primitive) { /*libère l'espace aloué à une primitive*/
+    deletePoints(&(primitive->points));
+    free(primitive);
+}
+
+void deletePrimitives (PrimitiveList* list) { /*libère l'espace aloué à une liste de primitives*/
+    PrimitiveList next;
+    while (*list != NULL) {
+        next = (*list)->next;
+        deletePrimitive(*list);
+        *list = next;
+    }
+    free(next);
+}
+
 int main(int argc, char** argv) {
 
     /* Initialisation de la SDL */
@@ -30,7 +186,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    /*SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);*/
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
     
     /* Ouverture d'une fenêtre et création d'un contexte OpenGL */
     if(NULL == SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE)) {
@@ -42,96 +198,84 @@ int main(int argc, char** argv) {
     SDL_WM_SetCaption("Moi je préfère les pâtes au gruyère", NULL);
 
     glClearColor(0.1, 0.1, 0.1, 1); /*couleur de fond originale*/
-    float red, green, blue; /*tmp colors*/
     int x[3], y[3]; /*tmp coords*/
     int maxPoints = 1; /*nombre de points nécéssaire avant de pouvoir dessiner la primitive*/
     int nbPoints = 0; /*nombre de points scannés*/
-    int color[3] = {255,255,255}; /*couleur active*/
+    int color[3] = {255,255,255}; /*couleur active*/    
+    glColor3ub(color[0],color[1],color[2]); /*définition de la couleur de dessin*/
     int paletteScreen = 0; /*est ce que la pallete est affichée ?*/
     char mode = 'p'; /*mode de dessin : p point, l ligne, t triangle, ' ' palette*/
+    PointList pointList = NULL;
+    PrimitiveList primitiveList = NULL;
 
-    /*on va dessiner en blanc*/
-    glColor3ub(color[0],color[1],color[2]);
 
     /* Boucle d'affichage */
     int loop = 1;
-
-    glClear(GL_COLOR_BUFFER_BIT);
+    
+    
     while(loop) {
+    glClear(GL_COLOR_BUFFER_BIT);
 
         /* Récupération du temps au début de la boucle */
         Uint32 startTime = SDL_GetTicks();
         
         /* Placer ici le code de dessin */
         if (nbPoints == maxPoints) {
+
+            Primitive* tmpPrim = NULL;
             switch (mode) {
+
+
                 case 'p':
-                printf("dessin d'un point\n");
-                    glBegin(GL_POINTS);
-                        glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] /WINDOW_HEIGHT));
-                    glEnd();
-                break;
-
+                    tmpPrim = allocPrimitive(GL_POINTS);
+                    /*
+                    printf("dessin d'un point\n");
+                        glBegin(GL_POINTS);
+                            glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] /WINDOW_HEIGHT));
+                        glEnd();
+                    */
+                    break;
                 case 'l':
-                printf("dessin d'une ligne\n");
-                    glBegin(GL_LINES);
-                        glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] /WINDOW_HEIGHT));
-                        glVertex2f(-1 + 2. * x[1] / WINDOW_WIDTH, -(-1 + 2. * y[1] /WINDOW_HEIGHT));
-                    glEnd();
-                break;
-                
-                case 't':
-                printf("dessin d'un triangle\n");
-                    glBegin(GL_TRIANGLES);
-                        glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] / WINDOW_HEIGHT));
-                        glVertex2f(-1 + 2. * x[1] / WINDOW_WIDTH, -(-1 + 2. * y[1] / WINDOW_HEIGHT));
-                        glVertex2f(-1 + 2. * x[2] / WINDOW_WIDTH, -(-1 + 2. * y[2] / WINDOW_HEIGHT));
-                    glEnd();
-                break;
+                    tmpPrim = allocPrimitive(GL_LINES);
 
+                    /*
+                    printf("dessin d'une ligne\n");
+                        glBegin(GL_LINES);
+                            glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] /WINDOW_HEIGHT));
+                            glVertex2f(-1 + 2. * x[1] / WINDOW_WIDTH, -(-1 + 2. * y[1] /WINDOW_HEIGHT));
+                        glEnd();
+                    */
+                    break;
+                case 't':
+                    tmpPrim = allocPrimitive(GL_TRIANGLES);
+                    /*
+                    printf("dessin d'un triangle\n");
+                        glBegin(GL_TRIANGLES);
+                            glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] / WINDOW_HEIGHT));
+                            glVertex2f(-1 + 2. * x[1] / WINDOW_WIDTH, -(-1 + 2. * y[1] / WINDOW_HEIGHT));
+                            glVertex2f(-1 + 2. * x[2] / WINDOW_WIDTH, -(-1 + 2. * y[2] / WINDOW_HEIGHT));
+                        glEnd();
+                    */
+                    break;
                 default:
                     break;
             }
+
+            tmpPrim->points = pointList;
+            addPrimitive(tmpPrim, &primitiveList);
         }
+        
 
 
-        if (paletteScreen) {
-            glBegin(GL_QUADS);
-                glColor3ub(23, 18, 25);
-                glVertex2f(-1 + 2. * 0, -(-1 + 2. * 0));
-                glVertex2f(-1 + 2. * 0, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 1/5, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 1/5, -(-1 + 2. * 0));
-                
-                glColor3ub(34, 85, 96);
-                glVertex2f(-1 + 2. * 1/5, -(-1 + 2. * 0));
-                glVertex2f(-1 + 2. * 1/5, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 2/5, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 2/5, -(-1 + 2. * 0));
-                                
-                glColor3ub(237,240,96);
-                glVertex2f(-1 + 2. * 2/5, -(-1 + 2. * 0));
-                glVertex2f(-1 + 2. * 2/5, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 3/5, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 3/5, -(-1 + 2. * 0));
-                
-                glColor3ub(240,128,60);
-                glVertex2f(-1 + 2. * 3/5, -(-1 + 2. * 0));
-                glVertex2f(-1 + 2. * 3/5, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 4/5, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 4/5, -(-1 + 2. * 0));
-                
-                glColor3ub(49,13,32);
-                glVertex2f(-1 + 2. * 4/5, -(-1 + 2. * 0));
-                glVertex2f(-1 + 2. * 4/5, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 1, -(-1 + 2. * 1));
-                glVertex2f(-1 + 2. * 1, -(-1 + 2. * 0));
+        if (paletteScreen) { /*dessin de la palette*/
+            drawPalette();
+            glColor3ub(color[0],color[1],color[2]);
+        } else 
+            drawPrimitives(primitiveList);
 
-                glColor3ub(color[0],color[1],color[2]);
-            glEnd();
-        }
 
         if (nbPoints >= maxPoints) {
+            pointList = NULL;
             nbPoints = 0;
         }
         
@@ -155,7 +299,7 @@ int main(int argc, char** argv) {
                 case SDL_MOUSEBUTTONUP:
                     printf("clic en (%d, %d)\n", e.button.x, e.button.y);
 
-                    if (paletteScreen) {
+                    if (paletteScreen) { /*sélection de la couleur si la palette est active*/
                         if (e.button.x >= 0 && e.button.x < 1. / 5 * WINDOW_WIDTH) {
                             color[0] = 23;
                             color[1] = 18;
@@ -172,15 +316,18 @@ int main(int argc, char** argv) {
                             color[0] = 240;
                             color[1] = 128;
                             color[2] = 60;
-                        }else {
+                        }else if (e.button.x < WINDOW_WIDTH) {
                             color[0] = 49;
                             color[1] = 13;
                             color[2] = 32;
                         }
 
-                    } else {
+                    } else { /*lecture d'un point*/
                         x[nbPoints] = e.button.x;
                         y[nbPoints] = e.button.y;
+                        Point* tmpPoint;
+                        tmpPoint = allocPoint(e.button.x, e.button.y, color[0], color[1], color[2]);
+                        addPointToList(tmpPoint, &pointList);
 
                         nbPoints = (nbPoints + 1);
 
@@ -193,12 +340,8 @@ int main(int argc, char** argv) {
                     
                     /*changer la couleur de fond au mouvement de souris*/
                     /*                    
-                    red = (float)e.button.x / WINDOW_WIDTH;
-                    green = e.button.y; 
-                    green /= WINDOW_HEIGHT;
-                    blue = 0;
-                    
-                    glClearColor((float)e.button.x / WINDOW_WIDTH, green, blue, 1);
+                    glClearColor((float)e.button.x / WINDOW_WIDTH, (float)e.button.y 
+                    green / WINDOW_HEIGHT, 0, 1);
                     glClear(GL_COLOR_BUFFER_BIT);
                     */
                     break;
@@ -223,6 +366,7 @@ int main(int argc, char** argv) {
                         maxPoints = 3;
                     }else if (e.key.keysym.sym == ' ') {
                         printf("fin mode palette\n");
+                        printf("nb pts : %d, max pts : %d\n", nbPoints, maxPoints);
                         paletteScreen = 0;
                     }
                     break;
@@ -231,7 +375,7 @@ int main(int argc, char** argv) {
                     printf("touche pressée (code = %d)\n", e.key.keysym.sym);
 
                     if (e.key.keysym.sym == ' ') {
-                        printf("mode palette\n");
+                        printf("affichage palette\n");
                         paletteScreen = 1;
                     }
                     break;
@@ -258,17 +402,11 @@ int main(int argc, char** argv) {
         }
     }
 
+    /*libérations de la liste de points*/
+    deletePoints(&pointList);
+
     /* Liberation des ressources associées à la SDL */ 
     SDL_Quit();
 
     return EXIT_SUCCESS;
-}
-
-
-void resizeWindow() {
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(-1.,-1.,-1.,1.);
-    SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
 }
