@@ -198,7 +198,6 @@ int main(int argc, char** argv) {
     SDL_WM_SetCaption("Moi je préfère les pâtes au gruyère", NULL);
 
     glClearColor(0.1, 0.1, 0.1, 1); /*couleur de fond originale*/
-    int x[3], y[3]; /*tmp coords*/
     int maxPoints = 1; /*nombre de points nécéssaire avant de pouvoir dessiner la primitive*/
     int nbPoints = 0; /*nombre de points scannés*/
     int color[3] = {255,255,255}; /*couleur active*/    
@@ -228,34 +227,12 @@ int main(int argc, char** argv) {
 
                 case 'p':
                     tmpPrim = allocPrimitive(GL_POINTS);
-                    /*
-                    printf("dessin d'un point\n");
-                        glBegin(GL_POINTS);
-                            glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] /WINDOW_HEIGHT));
-                        glEnd();
-                    */
                     break;
                 case 'l':
                     tmpPrim = allocPrimitive(GL_LINES);
-
-                    /*
-                    printf("dessin d'une ligne\n");
-                        glBegin(GL_LINES);
-                            glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] /WINDOW_HEIGHT));
-                            glVertex2f(-1 + 2. * x[1] / WINDOW_WIDTH, -(-1 + 2. * y[1] /WINDOW_HEIGHT));
-                        glEnd();
-                    */
                     break;
                 case 't':
                     tmpPrim = allocPrimitive(GL_TRIANGLES);
-                    /*
-                    printf("dessin d'un triangle\n");
-                        glBegin(GL_TRIANGLES);
-                            glVertex2f(-1 + 2. * x[0] / WINDOW_WIDTH, -(-1 + 2. * y[0] / WINDOW_HEIGHT));
-                            glVertex2f(-1 + 2. * x[1] / WINDOW_WIDTH, -(-1 + 2. * y[1] / WINDOW_HEIGHT));
-                            glVertex2f(-1 + 2. * x[2] / WINDOW_WIDTH, -(-1 + 2. * y[2] / WINDOW_HEIGHT));
-                        glEnd();
-                    */
                     break;
                 default:
                     break;
@@ -323,8 +300,6 @@ int main(int argc, char** argv) {
                         }
 
                     } else { /*lecture d'un point*/
-                        x[nbPoints] = e.button.x;
-                        y[nbPoints] = e.button.y;
                         Point* tmpPoint;
                         tmpPoint = allocPoint(e.button.x, e.button.y, color[0], color[1], color[2]);
                         addPointToList(tmpPoint, &pointList);
@@ -404,6 +379,7 @@ int main(int argc, char** argv) {
 
     /*libérations de la liste de points*/
     deletePoints(&pointList);
+    deletePrimitives(&primitiveList);
 
     /* Liberation des ressources associées à la SDL */ 
     SDL_Quit();
