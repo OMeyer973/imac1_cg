@@ -154,11 +154,7 @@ void drawPrimitives (PrimitiveList list) { /*dessine la liste de primitives don�
         glColor3ub(list->points->r, list->points->g, list->points->b);
         glBegin(list->primitiveType);
         while (points != NULL) {
-            float x = -1 + 2. * points->x / (float)WINDOW_WIDTH;
-            float y = -(-1 + 2. * points->y / (float)WINDOW_HEIGHT);
-            printf("%f point x, %f point y\n", points->x, points->x);
-            printf("%d WINDOW_WIDTH, %d WINDOW_HEIGHT\n", WINDOW_WIDTH, WINDOW_HEIGHT);
-            glVertex2f(x, y);
+            glVertex2f(points->x, points->y);
             points = points->next;
         }
         glEnd();
@@ -200,7 +196,7 @@ int main(int argc, char** argv) {
     /* Titre de la fenêtre */
     SDL_WM_SetCaption("Moi je préfère les pâtes au gruyère", NULL);
 
-    glClearColor(1, 0, 0.1, 1); /*couleur de fond originale*/
+    glClearColor(0.1, 0.1, 0.1, 1); /*couleur de fond originale*/
     int maxPoints = 1; /*nombre de points nécéssaire avant de pouvoir dessiner la primitive*/
     int nbPoints = 0; /*nombre de points scannés*/
     int color[3] = {255,255,255}; /*couleur active*/    
@@ -304,7 +300,10 @@ int main(int argc, char** argv) {
 
                     } else { /*lecture d'un point*/
                         Point* tmpPoint;
-                        tmpPoint = allocPoint(e.button.x, e.button.y, color[0], color[1], color[2]);
+                        float x = -1 + 2. * e.button.x / (float)WINDOW_WIDTH;
+                        float y = -(-1 + 2. * e.button.y / (float)WINDOW_HEIGHT);
+            
+                        tmpPoint = allocPoint(x, y, color[0], color[1], color[2]);
                         addPointToList(tmpPoint, &pointList);
 
                         nbPoints = (nbPoints + 1);

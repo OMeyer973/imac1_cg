@@ -30,7 +30,7 @@ void resizeWindow() { /*redimensionnement de la fenetre*/
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(-1.,-1.,-1.,1.);
+    gluOrtho2D(-1.,1.,-1.,1.);
     SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_RESIZABLE);
 }
 
@@ -125,30 +125,30 @@ int main(int argc, char** argv) {
     /* Boucle d'affichage */
     int loop = 1;
     while(loop) {
-       glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-       /* Récupération du temps au début de la boucle */
-       Uint32 startTime = SDL_GetTicks();
+        /* Récupération du temps au début de la boucle */
+        Uint32 startTime = SDL_GetTicks();
+        
+        /* Placer ici le code de dessin */
+        drawBrokenLine(pointList, lineOver);
        
-       /* Placer ici le code de dessin */
-       drawBrokenLine(pointList, lineOver);
+        /* Echange du front et du back buffer : mise à jour de la fenêtre */
+        SDL_GL_SwapBuffers();
        
-       /* Echange du front et du back buffer : mise à jour de la fenêtre */
-       SDL_GL_SwapBuffers();
-       
-       /* Boucle traitant les evenements */
-       SDL_Event e;
-       while(SDL_PollEvent(&e)) {
-       /* L'utilisateur ferme la fenêtre : */
-       if(e.type == SDL_QUIT) {
-          loop = 0;
-          break;
+        /* Boucle traitant les evenements */
+        SDL_Event e;
+        while(SDL_PollEvent(&e)) {
+        /* L'utilisateur ferme la fenêtre : */
+        if(e.type == SDL_QUIT) {
+            loop = 0;
+            break;
        }
         
         /* Quelques exemples de traitement d'evenements : */
         switch(e.type) {
-          /* Clic souris */
-          case SDL_MOUSEBUTTONUP:
+            /* Clic souris */
+            case SDL_MOUSEBUTTONUP:
                 if (lineOver == 0) {
                     printf("clic en (%d, %d)\n", e.button.x, e.button.y);
                     Point* tmpPoint;
@@ -161,20 +161,20 @@ int main(int argc, char** argv) {
                 }
                 break;
            
-          /* Touche clavier */
-          case SDL_KEYDOWN:
+            /* Touche clavier */
+            case SDL_KEYDOWN:
                 printf("touche pressée (code = %d)\n", e.key.keysym.sym);
                 break;
-          /* resize */
-          case SDL_VIDEORESIZE:
+            /* resize */
+            case SDL_VIDEORESIZE:
                 WINDOW_HEIGHT = e.resize.h;
                 WINDOW_WIDTH = e.resize.w;
                 printf("RESIZED to %d, %d\n",WINDOW_WIDTH, WINDOW_HEIGHT);
                 resizeWindow();
                 break;
 
-          default:
-                 break;
+            default:
+                break;
           }
        }
        /* Calcul du temps écoulé */
