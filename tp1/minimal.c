@@ -33,7 +33,6 @@ static const unsigned int BIT_PER_PIXEL = 32;
 static const Uint32 FRAMERATE_MILLISECONDS = 1000 / 60;
 
 
-
 void resizeWindow(); /*redimensionnement de la fenetre*/
 void drawPalette();/*dessine la palette à l'écran*/
 Point* allocPoint(float x, float y, unsigned char r, unsigned char g, unsigned char b); /*Initialise et retourne un point avec sa mémoire alouée*/
@@ -48,8 +47,8 @@ void resizeWindow() {  /*redimensionnement de la fenetre*/
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(-1.,-1.,-1.,1.);
-    SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
+    gluOrtho2D(-1., 1.,-1.,1.);
+    SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_RESIZABLE);
 }
 
 void drawPalette() {/*dessine la palette à l'écran*/
@@ -155,7 +154,11 @@ void drawPrimitives (PrimitiveList list) { /*dessine la liste de primitives don�
         glColor3ub(list->points->r, list->points->g, list->points->b);
         glBegin(list->primitiveType);
         while (points != NULL) {
-            glVertex2f(-1 + 2. * points->x / WINDOW_WIDTH, -(-1 + 2. * points->y / WINDOW_HEIGHT));
+            float x = -1 + 2. * points->x / (float)WINDOW_WIDTH;
+            float y = -(-1 + 2. * points->y / (float)WINDOW_HEIGHT);
+            printf("%f point x, %f point y\n", points->x, points->x);
+            printf("%d WINDOW_WIDTH, %d WINDOW_HEIGHT\n", WINDOW_WIDTH, WINDOW_HEIGHT);
+            glVertex2f(x, y);
             points = points->next;
         }
         glEnd();
@@ -197,7 +200,7 @@ int main(int argc, char** argv) {
     /* Titre de la fenêtre */
     SDL_WM_SetCaption("Moi je préfère les pâtes au gruyère", NULL);
 
-    glClearColor(0.1, 0.1, 0.1, 1); /*couleur de fond originale*/
+    glClearColor(1, 0, 0.1, 1); /*couleur de fond originale*/
     int maxPoints = 1; /*nombre de points nécéssaire avant de pouvoir dessiner la primitive*/
     int nbPoints = 0; /*nombre de points scannés*/
     int color[3] = {255,255,255}; /*couleur active*/    
