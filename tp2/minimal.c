@@ -71,18 +71,18 @@ void drawBrokenLine(PointList list, int lineOver) { /*dessine Une ligne brisée 
     glBegin(GL_LINES);
     while (list->next != NULL) {
        glColor3ub(list->r, list->g, list->b);
-       glVertex2f(-1 + 2. * list->x / WINDOW_WIDTH, -(-1 + 2. * list->y / WINDOW_HEIGHT));
+       glVertex2f(list->x, list->y);
        glColor3ub(list->next->r, list->next->g, list->next->b);
-       glVertex2f(-1 + 2. * list->next->x / WINDOW_WIDTH, -(-1 + 2. * list->next->y / WINDOW_HEIGHT));
+       glVertex2f(list->next->x,list->next->y);
        list = list->next;
     }
     
     if (list != NULL && lineOver) {
     glColor3ub(list->r, list->g, list->b);
-    glVertex2f(-1 + 2. * list->x / WINDOW_WIDTH, -(-1 + 2. * list->y / WINDOW_HEIGHT));
+    glVertex2f(list->x, list->y);
     
     glColor3ub(firstPoint->r, firstPoint->g, firstPoint->b);
-    glVertex2f(-1 + 2. * firstPoint->x / WINDOW_WIDTH, -(-1 + 2. * firstPoint->y / WINDOW_HEIGHT));
+    glVertex2f(firstPoint->x, firstPoint->y);
 
     }
     
@@ -152,7 +152,9 @@ int main(int argc, char** argv) {
                 if (lineOver == 0) {
                     printf("clic en (%d, %d)\n", e.button.x, e.button.y);
                     Point* tmpPoint;
-                    tmpPoint = allocPoint(e.button.x, e.button.y, 255, 255, 255);
+                    float x = -1 + 2. * e.button.x / WINDOW_WIDTH;
+                    float y = -(-1 + 2. * e.button.y / WINDOW_HEIGHT);
+                    tmpPoint = allocPoint(x, y, 255, 255, 255);
                     addPointToList(tmpPoint, &pointList);
                 }
                 nbPoints = (nbPoints + 1);
