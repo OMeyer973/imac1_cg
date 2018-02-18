@@ -33,7 +33,7 @@ void resizeWindow() { /*redimensionnement de la fenetre*/
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(-1.,1.,-1.,1.);
+    gluOrtho2D(-4.,4.,-3.,3.);
     SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_RESIZABLE);
 }
 
@@ -92,7 +92,8 @@ void drawBrokenLine(PointList list, int lineOver) { /*dessine Une ligne brisée 
     glEnd();
 }
 
-void deletePoints (PointList* list) { /*libère les ressources utilisées par une liste de points*/
+void deletePoints (PointList* list) {
+    /*libère les ressources utilisées par une liste de points*/
     PointList next;
     while (*list != NULL) {
        next = (*list)->next;
@@ -102,13 +103,12 @@ void deletePoints (PointList* list) { /*libère les ressources utilisées par un
 }
 
 void drawSquare(int fill) {
-    /*dessine un carré blanc de 1x1 centré sur l'origine*/
+    /*dessine un carré de 1x1 centré sur l'origine*/
     if (fill)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     else 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBegin(GL_QUADS);
-    glColor3ub(255, 255, 255);
     glVertex2f(-0.5,-0.5);
     glVertex2f(-0.5,0.5);
     glVertex2f(0.5,0.5);
@@ -129,11 +129,10 @@ void drawLandmark() {
 }
 
 void drawCircle (int fill, int nbSeg) {
-    /*dessine un cercle noir de diamètre 1, centré sur l'origine 
+    /*dessine un cercle de diamètre 1, centré sur l'origine 
     et découpé en nbSeg segments*/
     float teta = 0;
     glBegin(GL_POLYGON);
-    glColor3ub(122, 122, 122);
     if (fill)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     else {
@@ -143,6 +142,31 @@ void drawCircle (int fill, int nbSeg) {
         glVertex2f(0.5*cos(teta),0.5*sin(teta));
     }
     glEnd();       
+}
+
+void drawPoint(float x, float y) {
+    glBegin(GL_POINTS);
+    glColor3ub(255,255,255);
+    glVertex2f(x,y);
+    glEnd();       
+
+}
+
+float min (float a, float b) {
+    if (a <= b)
+        return a;
+    return b;
+}
+
+float max (float a, float b) {
+    if (a >= b)
+        return a;
+    return b;
+}
+
+float clamp(float a,float b,float c) {
+    //clamp a betwen b & c
+    return min(max(a,b),c);
 }
 
 int main(int argc, char** argv) {
@@ -158,16 +182,26 @@ int main(int argc, char** argv) {
        return EXIT_FAILURE;
     }
 
-
+    //variables utilisées
+    float x,y; //coordonées temporaires de la souris
     PointList pointList = NULL;
     int nbPoints = 0;
-    int lineOver = 0;
-    
+    int lineOver = 0; //est ce que le polygone a fini d'être tracé ?
+    float cJauneX=0, cJauneY=0, cJauneAngle=0; //coordonées du carré jaune
+    float RbleuX=0, rBleuY=0, rBleuAngle=0; //coordonées du rond bleu
+    int dragging=0; //si on est entrain de faire un drag & drop
+    int time=0;
+
     /* Titre de la fenêtre */
-    SDL_WM_SetCaption("OpenGL powa :D", NULL);
+    SDL_WM_SetCaption("Nous on AIME LA FORET", NULL);
     
+    /*initialisation de la matrice de transforamtion 
+    pour afficher un repère allant de -4 à 4 en x et -3 à 3 en y, centré en 0*/
+    gluOrtho2D(-4.,4.,-3.,3.);
+        
     /* Boucle d'affichage */
     int loop = 1;
+    
     while(loop) {
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -175,10 +209,69 @@ int main(int argc, char** argv) {
         Uint32 startTime = SDL_GetTicks();
         
         /* Placer ici le code de dessin */
+        /*exo2*/
+
         drawBrokenLine(pointList, lineOver);
+        gluOrtho2D(-4.,4.,-3.,3.);
+        glColor3ub(255, 255, 255);
         drawSquare(0);
         drawLandmark();
-        drawCircle(0,10);
+        glColor3ub(122, 122, 122);
+        drawCircle(0,20);
+        /*exo3*/
+        //repère
+        int i, j;
+        for (i=-4; i<=4; i++) {        
+            for (j=-4; j<=4; j++) 
+                drawPoint(i, j);
+        }
+        glScalef(8,6,1);
+        drawLandmark();
+        glLoadIdentity();
+        //cercle orange
+        //gluOrtho2D(-5,3,-5,1); // marche aussi à la place du repère + le translate !
+        gluOrtho2D(-4.,4.,-3.,3.);
+        glTranslatef(1,2,0);
+        glColor3ub(255, 100, 0);
+        drawCircle(0,20);
+        glLoadIdentity();
+        //carré rouge
+        glColor3ub(255, 0, 0);
+        gluOrtho2D(-4,4,-3,3);
+        glRotatef(45,0,0,1);
+        glTranslatef(2,0,0);
+        drawSquare(0);
+        glLoadIdentity();
+        //carré violet
+        glColor3ub(255, 0, 255);
+        gluOrtho2D(-4,4,-3,3);
+        glTranslatef(2,0,0);
+        glRotatef(45,0,0,1);
+        drawSquare(0);
+        glLoadIdentity();
+        //en inversant translation et rotation, le carré n'est pas au même endroit, on constate bien un changement de repère
+        //carré jaune
+        glColor3ub(255, 255, 0);
+        glTranslatef(cJauneX,cJauneY,0); //on fait la translation avant car les coordonées de la souris sont repérées entre -1 et 1
+        gluOrtho2D(-4,4,-3,3);
+        glRotatef(cJauneAngle,0,0,1);
+        drawSquare(0);
+        glLoadIdentity();
+        //rond bleu
+        glColor3ub(50, 50, 255);
+        gluOrtho2D(-4,4,-3,3);
+        glTranslatef(RbleuX,rBleuY,0);
+        drawCircle(0,40);
+        glLoadIdentity();
+        RbleuX += cos(rBleuAngle)/70;
+        RbleuX = clamp(RbleuX,-4,4);
+        rBleuY += sin(rBleuAngle)/70;
+        rBleuY = clamp(rBleuY,-3,3);
+        if (time >= 20) {
+            rBleuAngle = rand();
+            time = 0;
+        }
+        time++;
 
         /* Echange du front et du back buffer : mise à jour de la fenêtre */
         SDL_GL_SwapBuffers();
@@ -195,19 +288,37 @@ int main(int argc, char** argv) {
         /* Quelques exemples de traitement d'evenements : */
         switch(e.type) {
             /* Clic souris */
+            case SDL_MOUSEBUTTONDOWN:
+                if (e.button.button == SDL_BUTTON_RIGHT) {
+                    dragging=1;
+                }
+                break;
             case SDL_MOUSEBUTTONUP:
+                x = -1 + 2. * e.button.x / WINDOW_WIDTH;
+                y = -(-1 + 2. * e.button.y / WINDOW_HEIGHT);    
+                
                 if (lineOver == 0) {
                     printf("clic en (%d, %d)\n", e.button.x, e.button.y);
                     Point* tmpPoint;
-                    float x = -1 + 2. * e.button.x / WINDOW_WIDTH;
-                    float y = -(-1 + 2. * e.button.y / WINDOW_HEIGHT);
                     tmpPoint = allocPoint(x, y, 255, 255, 255);
                     addPointToList(tmpPoint, &pointList);
                 }
                 nbPoints = (nbPoints + 1);
                 if (e.button.button == SDL_BUTTON_RIGHT) {
                     lineOver = 1;
+                    dragging = 0;
                 }
+                if (e.button.button == SDL_BUTTON_LEFT) {
+                    cJauneX = x;
+                    cJauneY = y;
+                }
+                break;
+
+            case SDL_MOUSEMOTION:
+                if (dragging) {
+                    x = -1 + 2. * e.button.x / WINDOW_WIDTH;
+                    cJauneAngle = x*360;
+                }                    
                 break;
            
             /* Touche clavier */
