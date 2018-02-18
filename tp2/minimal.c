@@ -3,7 +3,10 @@
 #include <GL/glu.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
+
+#define PI 3.1415926535898
 
 typedef struct point {
     float x, y; //position
@@ -98,8 +101,49 @@ void deletePoints (PointList* list) { /*libère les ressources utilisées par un
     }
 }
 
+void drawSquare(int fill) {
+    /*dessine un carré blanc de 1x1 centré sur l'origine*/
+    if (fill)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    else 
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBegin(GL_QUADS);
+    glColor3ub(255, 255, 255);
+    glVertex2f(-0.5,-0.5);
+    glVertex2f(-0.5,0.5);
+    glVertex2f(0.5,0.5);
+    glVertex2f(0.5,-0.5);
+    glEnd();
+}
 
+void drawLandmark() {
+    /*dessine une croix de 1x1 centré sur l'origine*/
+    glBegin(GL_LINES);
+    glColor3ub(255, 0, 0);
+    glVertex2f(-0.5,0);
+    glVertex2f(0.5,0);
+    glColor3ub(0, 255, 0);
+    glVertex2f(0,-0.5);
+    glVertex2f(0,0.5);
+    glEnd();
+}
 
+void drawCircle (int fill, int nbSeg) {
+    /*dessine un cercle noir de diamètre 1, centré sur l'origine 
+    et découpé en nbSeg segments*/
+    float teta = 0;
+    glBegin(GL_POLYGON);
+    glColor3ub(122, 122, 122);
+    if (fill)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    for (teta=0; teta<=2*PI; teta+=2*PI/nbSeg) {
+        glVertex2f(0.5*cos(teta),0.5*sin(teta));
+    }
+    glEnd();       
+}
 
 int main(int argc, char** argv) {
     /* Initialisation de la SDL */
@@ -132,7 +176,10 @@ int main(int argc, char** argv) {
         
         /* Placer ici le code de dessin */
         drawBrokenLine(pointList, lineOver);
-       
+        drawSquare(0);
+        drawLandmark();
+        drawCircle(0,10);
+
         /* Echange du front et du back buffer : mise à jour de la fenêtre */
         SDL_GL_SwapBuffers();
        
