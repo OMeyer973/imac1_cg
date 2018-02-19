@@ -205,22 +205,103 @@ void drawArm(float a, float b, float c) {
 
 }
 
-float min (float a, float b) {
-    if (a <= b)
-        return a;
-    return b;
+int createFirstArmIDList() {
+    //distance des joints : 60
+    GLuint id = glGenLists(1);
+    glNewList(id, GL_COMPILE);
+        glColor3ub(255, 50, 0);
+        //cercles
+        glPushMatrix();
+            glScalef(40,40,1);
+            drawCircle(1,20);
+        glPopMatrix();
+        glPushMatrix();
+            glTranslatef(60,0,0);
+            glScalef(20,20,1);
+            drawCircle(1,20);
+        glPopMatrix();
+        //connection
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glBegin(GL_QUADS);
+            glVertex2f(0,20);
+            glVertex2f(60,10);
+            glVertex2f(60,-10);
+            glVertex2f(0,-20);
+        glEnd();
+    glEndList();
+    return id;
 }
 
-float max (float a, float b) {
-    if (a >= b)
-        return a;
-    return b;
+int createSecondArmIDList() {
+    //distance des joints : 40
+    GLuint id = glGenLists(1);
+    glNewList(id, GL_COMPILE);
+        //bouts
+        glColor3ub(150, 200, 0);
+        glPushMatrix();
+            glScalef(10,10,1);
+            drawRoundedSquare(0.3);
+        glPopMatrix();
+        glPushMatrix();
+            glTranslatef(40,0,0);
+            glScalef(10,10,1);
+            drawRoundedSquare(0.3);
+        glPopMatrix();
+        glColor3ub(100, 100, 0);
+        //bras
+        glPushMatrix();
+            glTranslatef(20,0,0);
+            glScalef(46,6,1);
+            drawSquare(1);
+        glPopMatrix();   
+    glEndList();
+    return id;
 }
 
-float clamp(float a,float b,float c) {
-    //clamp a betwen b & c
-    return min(max(a,b),c);
+int createThirdArmIDList() {
+    //distance des joints : 37
+    GLuint id = glGenLists(1);
+    glNewList(id, GL_COMPILE);
+        //bouts carré
+        glColor3ub(0, 200, 255);
+        glPushMatrix();
+            glScalef(6,6,1);
+            drawRoundedSquare(0.2);
+        glPopMatrix();
+        //bout rond
+        glColor3ub(0, 100, 255);
+        glPushMatrix();
+            glTranslatef(37,0,0);
+            glScalef(8,8,1);
+            drawCircle(1,10);
+        glPopMatrix();
+        //bras
+        glPushMatrix();
+            glTranslatef(18,0,0);
+            glScalef(40,4,1);
+            drawSquare(1);
+        glPopMatrix();   
+    glEndList();
+    return id;
 }
+
+void drawArmWithLists(float a, float b, float c, int idFirstArm, int idSecondArm, int idThirdArm) {
+    //dessine le bras complet avec a,b,c comme angles entre les 3 bras et grâce aux listes d'affichage des 3 bras (précédemment créées)
+    glPushMatrix();
+        glRotatef(a,0,0,1);
+        glCallList(idFirstArm);
+        
+        glTranslatef(60,0,0);
+        glRotatef(b,0,0,1);
+        glCallList(idSecondArm);
+        
+        glTranslatef(40,0,0);
+        glRotatef(c,0,0,1);
+        
+        glCallList(idThirdArm);
+        glPopMatrix(); 
+}
+
 
 int main(int argc, char** argv) {
     /* Initialisation de la SDL */
@@ -240,7 +321,7 @@ int main(int argc, char** argv) {
     float alpha=0, beta=0, gamma=0; //angles des bras
     float dAlpha=0, dBeta=0, dGamma=0; //vitesse de rotation des bras
     int time=0; //variable tmp de temps pour pouvoir modifier les angles des bras de manière aléatoire
-
+    int idFirstArm=createFirstArmIDList(), idSecondArm=createSecondArmIDList(), idThirdArm=createThirdArmIDList(); //ids des listes d'affichage des 3 bras
 
     /* Titre de la fenêtre */
     SDL_WM_SetCaption("Nous on AIME LA FORET", NULL);
@@ -267,8 +348,9 @@ int main(int argc, char** argv) {
         drawSecondArm();
         drawThirdArm();
         */
-        drawArm(alpha,beta,gamma);
-        //glColor3ub(255, 255, 255);
+        //drawArm(alpha,beta,gamma);
+        drawArmWithLists(alpha,beta,gamma,idFirstArm,idSecondArm,idThirdArm);
+        glColor3ub(255, 255, 255);
         drawRepere(100,100);
         glLoadIdentity();
 
