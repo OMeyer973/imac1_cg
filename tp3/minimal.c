@@ -209,25 +209,7 @@ int createFirstArmIDList() {
     //distance des joints : 60
     GLuint id = glGenLists(1);
     glNewList(id, GL_COMPILE);
-        glColor3ub(255, 50, 0);
-        //cercles
-        glPushMatrix();
-            glScalef(40,40,1);
-            drawCircle(1,20);
-        glPopMatrix();
-        glPushMatrix();
-            glTranslatef(60,0,0);
-            glScalef(20,20,1);
-            drawCircle(1,20);
-        glPopMatrix();
-        //connection
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glBegin(GL_QUADS);
-            glVertex2f(0,20);
-            glVertex2f(60,10);
-            glVertex2f(60,-10);
-            glVertex2f(0,-20);
-        glEnd();
+        drawFirstArm();
     glEndList();
     return id;
 }
@@ -236,24 +218,7 @@ int createSecondArmIDList() {
     //distance des joints : 40
     GLuint id = glGenLists(1);
     glNewList(id, GL_COMPILE);
-        //bouts
-        glColor3ub(150, 200, 0);
-        glPushMatrix();
-            glScalef(10,10,1);
-            drawRoundedSquare(0.3);
-        glPopMatrix();
-        glPushMatrix();
-            glTranslatef(40,0,0);
-            glScalef(10,10,1);
-            drawRoundedSquare(0.3);
-        glPopMatrix();
-        glColor3ub(100, 100, 0);
-        //bras
-        glPushMatrix();
-            glTranslatef(20,0,0);
-            glScalef(46,6,1);
-            drawSquare(1);
-        glPopMatrix();   
+        drawSecondArm();
     glEndList();
     return id;
 }
@@ -262,25 +227,7 @@ int createThirdArmIDList() {
     //distance des joints : 37
     GLuint id = glGenLists(1);
     glNewList(id, GL_COMPILE);
-        //bouts carré
-        glColor3ub(0, 200, 255);
-        glPushMatrix();
-            glScalef(6,6,1);
-            drawRoundedSquare(0.2);
-        glPopMatrix();
-        //bout rond
-        glColor3ub(0, 100, 255);
-        glPushMatrix();
-            glTranslatef(37,0,0);
-            glScalef(8,8,1);
-            drawCircle(1,10);
-        glPopMatrix();
-        //bras
-        glPushMatrix();
-            glTranslatef(18,0,0);
-            glScalef(40,4,1);
-            drawSquare(1);
-        glPopMatrix();   
+        drawThirdArm();
     glEndList();
     return id;
 }
