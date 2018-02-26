@@ -109,22 +109,22 @@ void drawSquare(int fill) {
     else 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBegin(GL_QUADS);
-    glVertex2f(-0.5,-0.5);
-    glVertex2f(-0.5,0.5);
-    glVertex2f(0.5,0.5);
-    glVertex2f(0.5,-0.5);
+        glVertex2f(-0.5,-0.5);
+        glVertex2f(-0.5,0.5);
+        glVertex2f(0.5,0.5);
+        glVertex2f(0.5,-0.5);
     glEnd();
 }
 
 void drawLandmark() {
     /*dessine une croix de 1x1 centré sur l'origine*/
     glBegin(GL_LINES);
-    glColor3ub(255, 0, 0);
-    glVertex2f(-0.5,0);
-    glVertex2f(0.5,0);
-    glColor3ub(0, 255, 0);
-    glVertex2f(0,-0.5);
-    glVertex2f(0,0.5);
+        glColor3ub(255, 0, 0);
+        glVertex2f(-0.5,0);
+        glVertex2f(0.5,0);
+        glColor3ub(0, 255, 0);
+        glVertex2f(0,-0.5);
+        glVertex2f(0,0.5);
     glEnd();
 }
 
@@ -146,8 +146,8 @@ void drawCircle (int fill, int nbSeg) {
 
 void drawPoint(float x, float y) {
     glBegin(GL_POINTS);
-    glColor3ub(255,255,255);
-    glVertex2f(x,y);
+        glColor3ub(255,255,255);
+        glVertex2f(x,y);
     glEnd();       
 
 }
