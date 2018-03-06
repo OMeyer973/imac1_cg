@@ -246,7 +246,7 @@ void drawArmWithLists(float a, float b, float c, int idFirstArm, int idSecondArm
         glRotatef(c,0,0,1);
         
         glCallList(idThirdArm);
-        glPopMatrix(); 
+    glPopMatrix(); 
 }
 
 

@@ -4,6 +4,7 @@
 #include <GL/glu.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 static unsigned int WINDOW_WIDTH = 800;
 static unsigned int WINDOW_HEIGHT = 800;
@@ -65,13 +66,12 @@ int main(int argc, char** argv) {
 
     // Chargement et traitement de la texture
     SDL_Surface* image = IMG_Load(filename);
-    isLoaded(image);
+    if (!isLoaded(image)) return 0;
     
-
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
+    
     // Envoie des données texture à la carte graphique
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -87,6 +87,7 @@ int main(int argc, char** argv) {
     // Libération des données CPU
     SDL_FreeSurface(image);
     glBindTexture(GL_TEXTURE_2D, 0);
+    
 
     //Boucle de dessin
     int loop = 1;
