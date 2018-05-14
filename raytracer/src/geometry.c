@@ -1,84 +1,77 @@
-#include <stdio.h>
-#include <geometry.h>
 #include <math.h>
+#include "geometry.h"
 
-Point3D pointXYZ(float x, float y, float z) { 
-	//Construit le point (x, y, z)
-	Point3D P;
-	P.x = x;
-	P.y = y;
-	P.z = z;
-	return P;
+Point3D createPoint(float x, float y, float z) {
+    Point3D p;
+    p.x = x;
+    p.y = y;
+    p.z = z;
+    return p;
 }
 
-Vector3D vectorXYZ(float x, float y, float z) {
-	//Construit le vecteur (x, y, z)
-	Vector3D V;
-	V.x = x;
-	V.y = y;
-	V.z = z;
-	return V;
+Vector3D createVectorXYZ(float x, float y, float z) {
+    Vector3D v;
+    v.x = x;
+    v.y = y;
+    v.z = z;
+    return v;
 }
 
-Vector3D vector(Point3D A, Point3D B) {
-	//Construit le vecteur AB = B − A
-	return vectorXYZ(B.x - A.x, B.y - A.y, B.z - A.z);	 
+Vector3D createVectorFromPoints(Point3D p1, Point3D p2) {
+    Vector3D v;
+    v.x = p2.x - p1.x;
+    v.y = p2.y - p1.y;
+    v.z = p2.z - p1.z;
+    return v;
 }
 
-Point3D pointPlusVector(Point3D P, Vector3D V) { 
-	//Construit le point P + V
-	return pointXYZ(P.x + V.x, P.y + V.y, P.z + V.z);
+Point3D pointPlusVector(Point3D p, Vector3D v) {
+    v.x += p.x;
+    v.y += p.y;
+    v.z += p.z;
+    return v;
 }
 
-Vector3D addVectors(Vector3D A, Vector3D B) {
-	//fonction d’addition de vecteurs
-	return vectorXYZ(A.x + B.x, A.y + B.y, A.z + B.z);
+Vector3D addVectors(Vector3D v1, Vector3D v2) {
+    v1.x += v2.x;
+    v1.y += v2.y;
+    v1.z += v2.z;
+    return v1;
 }
 
-Vector3D subVectors(Vector3D A, Vector3D B) {
-	//fonction de soustraction de vecteurs
-	return vectorXYZ(A.x - B.x, A.y - B.y, A.z - B.z);
+Vector3D subVectors(Vector3D v1, Vector3D v2) {
+    v1.x -= v2.x;
+    v1.y -= v2.y;
+    v1.z -= v2.z;
+    return v1;
 }
 
-Vector3D multVector(Vector3D V, float a) {
-	//fonction de multiplication d’un vecteur par un scalaire
-	return vectorXYZ(V.x * a, V.y * a, V.z * a);
+Vector3D multVector(Vector3D v, float a) {
+    v.x *= a;
+    v.y *= a;
+    v.z *= a;
+    return v;
 }
 
-Vector3D divVector(Vector3D V, float a) {
-	//fonction de division d’un vecteur par un scalaire
-	if (a != 0) {
-		return vectorXYZ(V.x / a, V.y / a, V.z / a);
-	}
-	return V;
+Vector3D divVector(Vector3D v, float a) {
+    v.x /= a;
+    v.y /= a;
+    v.z /= a;
+    return v;
 }
 
-float dot(Vector3D A, Vector3D B) {
-	//Fonction calculant le produit scalaire de deux vecteurs
-	//produit des longueurs d'un vecteur et de l'autre projeté sur lui
-	return A.x * B.x + A.y * B.y + A.z * B.z;
+float dot(Vector3D v1, Vector3D v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
-float norm(Vector3D A) {
-	//fonction calculant la norme d’un vecteur 
-	return sqrtf(dot(A,A));
+float norm(Vector3D v) {
+    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
-Vector3D normalize(Vector3D A) { 
-	//fonction retournant le vecteur normalisé passé en paramètre 
-	int lenght = norm(A);
-	if (lenght != 0) {
-		divVector(A, lenght);
-	}
-	return A;
-}
-
-void printVector3D(Vector3D V) {
-	//affiche les 3 composantes de V
-	printf("(%d, %d, %d)", V.x, V.y, V.z);
-}
-
-void printPoint3D(Point3D P) {
-	//affiche les 3 composantes de P
-	printf("(%d, %d, %d)", P.x, P.y, P.z);
+Vector3D normalize(Vector3D v) {
+    float n = norm(v);
+    v.x /= n;
+    v.y /= n;
+    v.z /= n;
+    return v;
 }

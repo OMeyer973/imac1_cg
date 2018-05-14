@@ -16,12 +16,12 @@ OBJ_FILES = $(patsubst $(SRC_PATH)/%.c,$(OBJ_PATH)/%.o, $(SRC_FILES))
 all: $(APP_BIN)
 
 $(APP_BIN): $(OBJ_FILES)
-		@mkdir -p $(BIN_PATH)
-		$(CC) -o $(BIN_PATH)/$(APP_BIN) $(OBJ_FILES) $(LDFLAGS)
+	@mkdir -p $(BIN_PATH)
+	$(CC) -o $(BIN_PATH)/$(APP_BIN) $(OBJ_FILES) $(LDFLAGS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c
-		@mkdir -p "$(@D)"
-		$(CC) -c $< -o $@ $(CFLAGS) $(INC_PATH)
+	@mkdir -p "$(@D)"
+	$(CC) -c $< -o $@ $(CFLAGS) $(INC_PATH)
 
 clean:
-		rm $(OBJ_FILES) $(BIN_PATH)/$(APP_BIN)
+	rm $(OBJ_FILES) $(BIN_PATH)/$(APP_BIN)
